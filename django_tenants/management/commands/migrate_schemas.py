@@ -1,6 +1,14 @@
 from django_tenants.migration_executors import get_executor
-from django_tenants.utils import get_tenant_model, get_public_schema_name, schema_exists, get_tenant_database_alias, \
-    has_multi_type_tenants, get_multi_type_database_field_name, get_tenant_migration_order
+from django_tenants.utils import (
+    get_tenant_model,
+    get_public_schema_name,
+    schema_exists,
+    get_tenant_database_alias,
+    has_multi_type_tenants,
+    get_multi_type_database_field_name,
+    get_tenant_migration_order,
+    create_schema_if_not_exists,
+)
 from django_tenants.management.commands import SyncCommon
 from django.utils.module_loading import import_string
 from django.conf import settings
@@ -60,6 +68,9 @@ class MigrateSchemasCommand(SyncCommon):
         executor = GET_EXECUTOR_FUNCTION(codename=self.executor)(self.args, self.options)
 
         if self.sync_public:
+            create_schema_if_not_exists(
+                self.PUBLIC_SCHEMA_NAME, self.options.get("database", None)
+            )
             executor.run_migrations(tenants=[self.PUBLIC_SCHEMA_NAME])
         if self.sync_tenant:
             if self.schema_name and self.schema_name != self.PUBLIC_SCHEMA_NAME:

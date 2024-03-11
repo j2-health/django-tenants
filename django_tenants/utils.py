@@ -187,6 +187,17 @@ def django_is_in_test_mode():
     """
     return hasattr(mail, 'outbox')
 
+def create_schema_if_not_exists(schema_name, database=get_tenant_database_alias()):
+    """
+    This function creates a schema if it does not exist
+    """
+    if not schema_exists(schema_name, database=database):
+        _connection = connections[database]
+        cursor = _connection.cursor()
+        sql = "CREATE SCHEMA {0}".format(connection.ops.quote_name(schema_name))
+        cursor.execute(sql)
+        cursor.close()
+
 
 def schema_exists(schema_name, database=get_tenant_database_alias()):
     _connection = connections[database]
